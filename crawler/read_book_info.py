@@ -38,10 +38,10 @@ def read_book_info(url):
 		home_url = url
 		
 		# 开启postgresql连接 
-		conn = psycopg2.connect(database='books', user='dbuser0', password='dbuser', host='127.0.0.1', port='5432')
+		conn = psycopg2.connect(database='books', user='amigo', password='amigo', host='127.0.0.1', port='5432')
 		cur = conn.cursor()
 		# 执行插入语句
-		cur.execute('''INSERT INTO books(title, author, description, cover_url, length, catalog_url, home_url) VALUES 
+		cur.execute('''INSERT INTO t_books(title, author, description, cover_url, length, catalog_url, home_url) VALUES 
 		(%s, %s, %s, %s, %s, %s, %s)'''
 		, (title_str, author, description, cover, length, catalog_url, home_url))
 		print('insert book: %s' % (title_str))

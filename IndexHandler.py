@@ -28,9 +28,9 @@ class BookListHandler(tornado.web.RequestHandler):
 	def get(self):
 		page_size = 20
 		page_index = self.get_argument('page', 1)
-		conn = psycopg2.connect(database='books', user='dbuser0', password='dbuser', host='127.0.0.1', port='5432')
+		conn = psycopg2.connect(database='books', user='amigo', password='amigo', host='127.0.0.1', port='5432')
 		cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-		cur.execute('SELECT * FROM books LIMIT %s OFFSET %s;', (page_size, 0))
+		cur.execute('SELECT * FROM t_books LIMIT %s OFFSET %s;', (page_size, 0))
 		# 构造json响应
 		db_books = cur.fetchall()
 		# book_list = [Book(d['title'], d['author'], d['cover_url'], d['description'], d['length']) for d in db_books]	
