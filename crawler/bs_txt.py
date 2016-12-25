@@ -7,7 +7,7 @@ def get_book_urls(url):
 	with request.urlopen(url) as f:
 		bs = BeautifulSoup(f.read(), 'html.parser')
 
-	with open('urls.txt', 'w') as url_file:
+	with open('urls.txt', 'a') as url_file:
 		L = bs.find_all('a', 'tit')
 		for tag in L:
 			url_file.write(tag.get('href') + '\n')
