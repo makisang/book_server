@@ -30,16 +30,11 @@ def read_book_info(url):
 	description = ''.join(str_list)
 	# 字数
 	mb_size = bs.find('div', 'detail_right').find_all('li', 'small')[2].text[5:-2]
-	length =int(float(mb_size) * 524288)
-	
-	conn = psycopg2.connect(database='books', user='dbuser0', password='dbuser', host='127.0.0.1', port='5432')
-	cur = conn.cursor()
-	cur.execute('''INSERT INTO books(title, author, description, cover_url, length, home_url) VALUES
-	(%s, %s, %s, %s, %s, %s)''', (title, author, description, cover_url, length, home_url))
-	print('insert book: %s' % (title))
-	conn.commit()
-	cur.close()
-	conn.close()
+	try:
+		length =int(float(mb_size) * 524288)
+	except ValueError as e:
+		print('mb_size ValueError: ', e)
+		length = 911015
 	
 	# 上传文件到青云
 	download_url = bs.find_all('a', 'downButton')[1].get('href')
@@ -47,12 +42,33 @@ def read_book_info(url):
 		txt_bytes = requests.get(download_url).content
 	except HTTPError as e:
 		print('download link missing: ', e)
+		return
+
 	headers = {'Content-Type':'text/plain', 'Content-Length':len(txt_bytes)}
 	res1 = requests.put(qing_file_url + title + '.txt', data = txt_bytes, headers = headers)
-	
+	if res1.status_code == 201:
+		print('upload to QingStor success: %s.txt' % (title))
+	else:
+		print('upload to QingStor failure: %s.txt' % (title))
+		return
 	img_bytes = requests.get(cover_url).content
 	headers = {'Content-Type':'image/*', 'Content-Length':len(img_bytes)}
 	res2 = requests.put(qing_img_url + title + '.jpg', data = img_bytes, headers = headers)
+	if res2.status_code == 201:
+		print('upload to QingStor success: %s.jpg' % (title))
+	else:
+		print('upload to QingStor failure: %s.jpg' % (title))
+		return
+
+	conn = psycopg2.connect(database='d_books', user='amigo', password='amigo', host='127.0.0.1', port='5432')
+	cur = conn.cursor()
+	cur.execute('''INSERT INTO t_books(title, author, description, length, home_url) VALUES
+	(%s, %s, %s, %s, %s)''', (title, author, description, length, home_url))
+	print('insert book: %s' % (title))
+	conn.commit()
+	cur.close()
+	conn.close()
+	
 
 
 if __name__ == '__main__':
